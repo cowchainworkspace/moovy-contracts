@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
+import "hardhat/console.sol";
 
 contract Moovy is ERC20Capped, Ownable {
 
@@ -33,7 +34,7 @@ contract Moovy is ERC20Capped, Ownable {
   uint256 public TGETimestamp;
 
   // @dev Token sale contract address
-  address immutable public tokenSale;
+  address public tokenSale;
   // @dev Partnership program address
 
   // @dev Group distribution data
@@ -56,12 +57,8 @@ contract Moovy is ERC20Capped, Ownable {
 
   /**
    * @notice Constructor
-   * @param _tokenSale Token sale contract address
    */
-  constructor(address _tokenSale) ERC20('MOIL', 'MOIL') ERC20Capped(MAX_TOKEN_SUPPLY) {
-
-    tokenSale = _tokenSale;
-
+  constructor() ERC20('MOIL', 'MOIL') ERC20Capped(MAX_TOKEN_SUPPLY) {
     // setup all allocations
     groups[AllocationGroup.Founders].cliff = 2 * 30 days;
     groups[AllocationGroup.Founders].vestingPeriod = 7 * 30 days;
@@ -129,12 +126,16 @@ contract Moovy is ERC20Capped, Ownable {
     emit TGEPassed();
   }
 
+  function setTokenSale(address _tokenSale) external onlyOwner {
+    tokenSale = _tokenSale;
+  }
+
   function calculateVestingAmount(AllocationGroup _group) internal view returns (uint256) {
     GroupData memory group = groups[_group];
 
     uint256 initialUnlock = group.balance * group.initialUnlock / MAX_BPS;
     uint256 timePassed = (block.timestamp - group.cliff - TGETimestamp) > group.vestingPeriod ? group.vestingPeriod : (block.timestamp - group.cliff - TGETimestamp);
-    uint256 pendingTokens = (group.balance - initialUnlock) * timePassed / group.vestingPeriod;
+    uint256 pendingTokens = timePassed == 0 ? 0 : (group.balance - initialUnlock) * timePassed / group.vestingPeriod;
     uint256 availableTokens = initialUnlock + pendingTokens - group.unlockedBalance;
 
     return availableTokens;

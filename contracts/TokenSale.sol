@@ -34,7 +34,6 @@ contract MoovyTokenSale is Ownable {
         Seed, Private, IGO
     }
 
-
     uint256 constant private MAX_BPS = 10000;
     mapping(RoundType => RoundData) roundData;
 
@@ -51,8 +50,8 @@ contract MoovyTokenSale is Ownable {
     constructor (ERC20 _payToken, Moovy _token) {
         token = _token; // set SLT token address
         payToken = _payToken; // set token for payments
-        pricePerToken = 37 * _payToken.decimals() / 100;
-        tokenSaleSupply = 28_774_000 * _token.decimals();
+        pricePerToken = 37 * 10**_payToken.decimals() / 100;
+        tokenSaleSupply = 28_774_000 * 10**_token.DECIMALS();
 
         roundData[RoundType.Seed].cliff = 2 * 30 days;
         roundData[RoundType.Seed].vestingPeriod = 8 * 30 days;
@@ -116,14 +115,14 @@ contract MoovyTokenSale is Ownable {
     function claim(RoundType round) external {
         address sender = msg.sender;
         uint256 vestingAmount = calculateVestingAmount(round, sender);
-        bool success = token.transfer(sender, balanceToClaim);
+        bool success = token.transfer(sender, vestingAmount);
         require(success, 'invalid transfer');
         roundData[round].accounts[sender].unlockedBalance += vestingAmount;
     }
 
     function calculateVestingAmount(RoundType _round, address _account) internal view returns (uint256) {
-        RoundData memory round = roundData[_round];
-        AccountData memory account = round.accounts[account];
+        RoundData storage round = roundData[_round];
+        AccountData memory account = round.accounts[_account];
 
         uint256 initialUnlock = account.balance * round.initialUnlock / MAX_BPS;
         uint256 timePassed = (block.timestamp - round.cliff - _tokenSaleEndTimestamp) > round.vestingPeriod ? round.vestingPeriod : (block.timestamp - round.cliff - _tokenSaleEndTimestamp);
