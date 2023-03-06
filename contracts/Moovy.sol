@@ -21,7 +21,7 @@ contract Moovy is ERC20Capped, Ownable {
   address constant private PARTNERSHIP_PROGRAM = 0x1Bc24f3b9Dd264fBC764e6d2B86B950fd0A9f709;
 
   // @dev Token decimals
-  uint8 constant private DECIMALS = 18;
+  uint8 constant public DECIMALS = 18;
   // @dev Token generation event
   uint256 constant private MAX_BPS = 10000;
   // @dev Max token supply
@@ -143,7 +143,6 @@ contract Moovy is ERC20Capped, Ownable {
   // distribute tokens for specific group
   function distribute(AllocationGroup group) public onlyOwner {
     require(block.timestamp >= (TGETimestamp + groups[group].cliff), "[distribute]: Distribution is not started yet");
-
     GroupData storage groupData = groups[group];
     uint256 vestingAmount = calculateVestingAmount(group);
     _transfer(address(this), groupData.receiver, vestingAmount);
