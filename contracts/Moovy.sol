@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
-import "hardhat/console.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract Moovy is ERC20Capped, Ownable {
+contract Moovy is ERC20Capped, Ownable, ReentrancyGuard {
 
   address constant private FOUNDERS = 0x3567969465d2135435e9318Ac278975472F62BAE;
   address constant private ADVISORS = 0x00781266C0e25bfd385685a5F4c1c9C9D0D47cDc;
@@ -129,7 +128,7 @@ contract Moovy is ERC20Capped, Ownable {
     return availableTokens;
   }
 
-  function distribute(AllocationGroup group) public onlyOwner {
+  function distribute(AllocationGroup group) public onlyOwner nonReentrant {
     require(block.timestamp >= (TGETimestamp + groups[group].cliff), "[distribute]: Distribution is not started yet");
     GroupData storage groupData = groups[group];
     uint256 vestingAmount = calculateVestingAmount(group);

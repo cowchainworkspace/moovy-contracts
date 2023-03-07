@@ -1,15 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./Moovy.sol";
-import "hardhat/console.sol";
 
-contract MoovyTokenSale is Ownable {
+contract MoovyTokenSale is Ownable, ReentrancyGuard {
 
     struct AccountData {
         uint256 balance;
@@ -79,7 +76,7 @@ contract MoovyTokenSale is Ownable {
         emit StartIGO();
     }
 
-    function buy(uint256 value) external {
+    function buy(uint256 value) external nonReentrant {
         require(isIGOStarted, "[buy]: IGO is not started");
         require(_tokenSaleEndTimestamp == 0, "[buy]: token sale is ended");
         require(tokenSold + value <= maxIGOSupply, "[buy]: max token supply exceeded");
@@ -123,7 +120,7 @@ contract MoovyTokenSale is Ownable {
         }
     }
 
-    function claim(RoundType round) external {
+    function claim(RoundType round) external nonReentrant {
         address sender = msg.sender;
         uint256 vestingAmount = calculateVestingAmount(round, sender);
         bool success = token.transfer(sender, vestingAmount);
