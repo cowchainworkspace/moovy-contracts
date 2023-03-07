@@ -26,7 +26,7 @@ contract Moovy is ERC20Capped, Ownable {
 
   uint256 public TGETimestamp;
 
-  address public tokenSale;
+  address private tokenSale;
 
   struct GroupData {
     uint256 cliff;
@@ -105,6 +105,7 @@ contract Moovy is ERC20Capped, Ownable {
 
   function setTGEPassed() public onlyOwner {
     require(TGETimestamp == 0, "TGE is already passed");
+    require(tokenSale != address(0), "Token sale is not settled");
     TGETimestamp = block.timestamp;
 
     _mint(tokenSale, TOKEN_SALE_SUPPLY);
@@ -137,6 +138,5 @@ contract Moovy is ERC20Capped, Ownable {
 
     emit Distribute(group, vestingAmount);
   }
-
 
 }

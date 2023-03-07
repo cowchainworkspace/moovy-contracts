@@ -25,7 +25,7 @@ contract MoovyTokenSale is Ownable {
     struct RoundData {
         address[] accountList;
         mapping(address => AccountData) accounts;
-        uint256 cliff; // cliff period
+        uint256 cliff;
         uint256 vestingPeriod;
         uint256 initialUnlock;
     }
@@ -123,8 +123,6 @@ contract MoovyTokenSale is Ownable {
         }
     }
 
-
-    // claim tokens
     function claim(RoundType round) external {
         address sender = msg.sender;
         uint256 vestingAmount = calculateVestingAmount(round, sender);
