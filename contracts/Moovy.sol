@@ -8,9 +8,6 @@ import "hardhat/console.sol";
 
 contract Moovy is ERC20Capped, Ownable {
 
-  // @dev Token generation event
-  event TGEPassed();
-
   address constant private FOUNDERS = 0x3567969465d2135435e9318Ac278975472F62BAE;
   address constant private ADVISORS = 0x00781266C0e25bfd385685a5F4c1c9C9D0D47cDc;
   address constant private TEAM_MEMBERS = 0xA911361263eacC9579eaA29bF14056Ee887968DF;
@@ -21,45 +18,35 @@ contract Moovy is ERC20Capped, Ownable {
   address constant private MARKETING = 0xAA2C53096aFd874B848e420173b9f7bE4Db16107;
   address constant private PARTNERSHIP_PROGRAM = 0x1Bc24f3b9Dd264fBC764e6d2B86B950fd0A9f709;
 
-  // @dev Token decimals
   uint8 constant public DECIMALS = 18;
-  // @dev Token generation event
   uint256 constant private MAX_BPS = 10000;
-  // @dev Max token supply
   uint256 constant private MAX_TOKEN_SUPPLY = 1_000_000_000 * 10**DECIMALS;
-  // @dev Token sale supply
+
   uint256 constant private TOKEN_SALE_SUPPLY = 28_774_000 * 10**DECIMALS;
 
-  // @dev Token generation timestamp
   uint256 public TGETimestamp;
 
-  // @dev Token sale contract address
   address public tokenSale;
-  // @dev Partnership program address
 
-  // @dev Group distribution data
   struct GroupData {
-    uint256 cliff; // cliff period
-    uint256 vestingPeriod; // vesting period
-    address receiver; // receiver address
-    uint256 initialUnlock; // initial unlock percentage
+    uint256 cliff;
+    uint256 vestingPeriod;
+    address receiver;
+    uint256 initialUnlock;
     uint256 balance;
     uint256 unlockedBalance;
   }
 
-  // @dev Allocation groups
   enum AllocationGroup {
     Founders, Advisors, TeamMembers, KOLRewardsPool, PlayToEarn, EcosystemFund, PoolRewards, Marketing, Partnership
   }
 
-  // @dev Allocation group data map
   mapping (AllocationGroup => GroupData) public groups;
 
-  /**
-   * @notice Constructor
-   */
+  event TGEPassed();
+  event Distribute(AllocationGroup group, uint256 value);
+
   constructor() ERC20('MOIL', 'MOIL') ERC20Capped(MAX_TOKEN_SUPPLY) {
-    // setup all allocations
     groups[AllocationGroup.Founders].cliff = 2 * 30 days;
     groups[AllocationGroup.Founders].vestingPeriod = 7 * 30 days;
     groups[AllocationGroup.Founders].initialUnlock = 2000;
@@ -141,13 +128,14 @@ contract Moovy is ERC20Capped, Ownable {
     return availableTokens;
   }
 
-  // distribute tokens for specific group
   function distribute(AllocationGroup group) public onlyOwner {
     require(block.timestamp >= (TGETimestamp + groups[group].cliff), "[distribute]: Distribution is not started yet");
     GroupData storage groupData = groups[group];
     uint256 vestingAmount = calculateVestingAmount(group);
     _transfer(address(this), groupData.receiver, vestingAmount);
     groupData.unlockedBalance += vestingAmount;
+
+    emit Distribute(group, vestingAmount);
   }
 
 
