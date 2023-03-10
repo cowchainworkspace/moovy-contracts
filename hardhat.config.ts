@@ -6,17 +6,27 @@ import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
+import process from "process";
 
 dotenv.config();
 
 const config: HardhatUserConfig = {
   solidity: "0.8.19",
   networks: {
-    rinkeby: {
-      url: "https://eth-rinkeby.alchemyapi.io/v2/qQw7iYDKM4xa39ZX2EsURUFaBB13gWEg",
-      accounts:
-          process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    mumbai: {
+      url: "https://rpc.ankr.com/polygon_mumbai",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
     },
+    polygon: {
+      url: "https://polygon.llamarpc.com",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+    },
+  },
+  etherscan: {
+    apiKey: {
+      polygon: process.env.POLYGONSCAN_API_KEY || '',
+      polygonMumbai: process.env.POLYGONSCAN_API_KEY || ''
+    }
   }
 };
 
