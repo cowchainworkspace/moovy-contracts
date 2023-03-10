@@ -57,7 +57,7 @@ describe("Moovy", () => {
 
    usdt = await usdt_factory.deploy();
    await usdt.deployed();
-   //
+
    tokenSale = await tokenSale_factory.deploy(usdt.address, moovy.address);
    await tokenSale.deployed();
 
